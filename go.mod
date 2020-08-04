@@ -1,4 +1,4 @@
-module micro-kafka-producer
+module https://github.com/alexboor/micro-kafka-producer
 
 go 1.14
 
