@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	KAFKAADDRESSES = "127.0.0.1:9092"
+	CLIENTID       = "micro-kafka-producer"
+	KAFKAADDRESSES = "127.0.0.1:29092"
 	TOPIC          = "in-example"
 	FILENAME       = "message.json"
 )
@@ -22,7 +23,7 @@ func main() {
 
 	msg, err := getJSONFromFile(FILENAME)
 	if err != nil {
-		fmt.Println("error to read json file: ", err)
+		fmt.Println("error to read file: ", err)
 		os.Exit(1)
 	}
 
@@ -59,16 +60,25 @@ func getJSONFromFile(fn string) (interface{}, error) {
 func initProducer() (sarama.SyncProducer, error) {
 	sarama.Logger = log.New(os.Stdout, "", log.Ltime)
 
+	kafkaVersion, err := sarama.ParseKafkaVersion("1.0.0")
+	if err != nil {
+		return nil, err
+	}
+
 	conf := sarama.NewConfig()
 	conf.Producer.Retry.Max = 5
 	conf.Producer.RequiredAcks = sarama.WaitForAll
 	conf.Producer.Return.Successes = true
+	conf.Producer.Compression = sarama.CompressionNone
+	conf.Version = kafkaVersion
+	conf.ClientID = CLIENTID
 
 	return sarama.NewSyncProducer([]string{KAFKAADDRESSES}, conf)
 }
 
 // Publish given message with given producer
 func pub(m interface{}, producer sarama.SyncProducer) error {
+
 	jsonMsg, err := json.Marshal(m)
 	if err != nil {
 		return err
@@ -76,6 +86,7 @@ func pub(m interface{}, producer sarama.SyncProducer) error {
 
 	msg := &sarama.ProducerMessage{
 		Topic: TOPIC,
+		Key:   sarama.StringEncoder("data"),
 		Value: sarama.ByteEncoder(jsonMsg),
 	}
 
