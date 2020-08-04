@@ -13,8 +13,8 @@ import (
 
 const (
 	KAFKAADDRESSES = "127.0.0.1:9092"
-	TOPIC = "in-example"
-	FILENAME = "message.json"
+	TOPIC          = "in-example"
+	FILENAME       = "message.json"
 )
 
 func main() {
@@ -64,7 +64,7 @@ func initProducer() (sarama.SyncProducer, error) {
 	conf.Producer.RequiredAcks = sarama.WaitForAll
 	conf.Producer.Return.Successes = true
 
-	return  sarama.NewSyncProducer([]string{KAFKAADDRESSES}, conf)
+	return sarama.NewSyncProducer([]string{KAFKAADDRESSES}, conf)
 }
 
 // Publish given message with given producer
@@ -85,4 +85,6 @@ func pub(m interface{}, producer sarama.SyncProducer) error {
 	}
 
 	fmt.Printf("published OK! Partition: %d, Offset: %d", p, o)
+
+	return nil
 }
